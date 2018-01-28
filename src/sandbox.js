@@ -1,6 +1,6 @@
 const debug = require('debug')('js-bot:sandbox')
 const { resolve } = require('path')
-const fs = require('fs-extra')
+const { writeFile, unlink } = require('fs-extra')
 const uid = require('./utils/uid')
 const { asyncExec } = require('./utils/exec-promisify')
 const { boilerplateGenerated } = require('./utils/boilerplate-code')
@@ -13,14 +13,14 @@ async function createSandbox(strCode) {
 
   try {
     debug('path - ', path)
-    await fs.writeFile(path, code)
+    await writeFile(path, code)
     const rs = await asyncExec(`node tmp/${fileName}`)
 
-    await fs.unlink(path)
+    await unlink(path)
     return rs
   }
   catch (error) {
-    await fs.unlink(path)
+    await unlink(path)
     throw error
   }
 }
