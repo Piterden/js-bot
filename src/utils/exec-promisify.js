@@ -5,22 +5,24 @@ const { exec } = require('child_process')
 const { EXEC_TIMEOUT } = process.env
 
 module.exports = {
-  asyncExec(command) {
+  asyncExec: (command) => new Promise((resolve, reject) => {
     let timeoutId = null
 
-    return new Promise((resolve, reject) => {
-      const child = exec(command, (stderr, stdout) => {
-        if (stderr) {
-          return reject(stderr)
-        }
-        clearTimeout(timeoutId)
-        return resolve(stdout)
-      })
+    const child = exec(command, (stderr, stdout) => {
+      if (stderr) {
+        return reject(stderr)
+      }
 
-      timeoutId = setTimeout(() => {
-        kill(child.pid)
-        reject(new Error('Execution timeout!!!'))
-      }, EXEC_TIMEOUT)
+      if (timeoutId) {
+        clearTimeout(timeoutId)
+      }
+
+      return resolve(stdout)
     })
-  },
+
+    timeoutId = setTimeout(() => {
+      kill(child.pid)
+      reject(new Error('Execution timeout!!!'))
+    }, EXEC_TIMEOUT)
+  }),
 }
