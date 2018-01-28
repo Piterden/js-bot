@@ -4,7 +4,7 @@ const et = require('./escape-tilde')
 
 module.exports = {
   boilerplateGenerated(code) {
-    debug('Template formating started')
+    debug('Template formatting started')
     return `const vm = require('vm')
 const sandbox = require('../src/utils/context')
 vm.createContext(sandbox)
