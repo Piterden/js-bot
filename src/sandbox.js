@@ -1,30 +1,32 @@
-const debug = require('debug')('js-bot:sandbox')
 const { resolve } = require('path')
+const debug = require('debug')('js-bot:sandbox')
 const { writeFile, unlink } = require('fs-extra')
+
 const uid = require('./utils/uid')
 const { asyncExec } = require('./utils/exec-promisify')
 const { boilerplateGenerated } = require('./utils/boilerplate-code')
 
 
-async function createSandbox(strCode) {
-  const fileName = `${uid()}.js`
-  const path = resolve(__dirname, '..', 'tmp', fileName)
-  const code = boilerplateGenerated(strCode)
-
-  try {
-    debug('path - ', path)
-    await writeFile(path, code)
-    const rs = await asyncExec(`node tmp/${fileName}`)
-
-    await unlink(path)
-    return rs
-  }
-  catch (error) {
-    await unlink(path)
-    throw error
-  }
-}
-
 module.exports = {
-  createSandbox,
+  async createSandbox(codeMessage) {
+    const filename = `${uid()}.js`
+    const filepath = resolve(`tmp/${filename}`)
+    const code = boilerplateGenerated(codeMessage)
+    let result
+
+    debug('path - ', filepath)
+
+    await writeFile(filepath, code)
+
+    try {
+      result = await asyncExec(`node tmp/${filename}`)
+    }
+    catch (error) {
+      await unlink(filepath)
+      throw error
+    }
+
+    await unlink(filepath)
+    return result
+  },
 }
